@@ -32,7 +32,13 @@ const PreviewModal = ({ open, handleClose, project }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [fade, setFade] = useState(true);
   const images = project
-    ? project.screenshots.map((screenshot) => screenshot.download_url)
+    ? project.screenshots
+        .map((screenshot) => screenshot.download_url)
+        .sort((a, b) => {
+          const numA = a.match(/(\d+)(?=\.\w*$)/)[0];
+          const numB = b.match(/(\d+)(?=\.\w*$)/)[0];
+          return numA.localeCompare(numB, undefined, { numeric: true });
+        })
     : [];
   const maxSteps = images.length;
   const cleanName = project?.name.replace('OPL-Theme-', '');
