@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Modal,
   Typography,
@@ -28,18 +28,37 @@ const style = {
   p: 4,
 };
 
+const aspectRatioContainer = (paddingTop) => ({
+  position: 'relative',
+  width: '100%',
+  paddingTop, // Apply the calculated padding-top
+});
+
+const aspectRatioContent = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+};
+
 const PreviewModal = ({ open, handleClose, project }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [fade, setFade] = useState(true);
-  const images = project
-    ? project.screenshots
-        .map((screenshot) => screenshot.download_url)
-        .sort((a, b) => {
-          const numA = a.match(/(\d+)(?=\.\w*$)/)[0];
-          const numB = b.match(/(\d+)(?=\.\w*$)/)[0];
-          return numA.localeCompare(numB, undefined, { numeric: true });
-        })
-    : [];
+  const [paddingTop, setPaddingTop] = useState('56.25%');
+
+  const images = useMemo(() => {
+    return project
+      ? project.screenshots
+          .map((screenshot) => screenshot.download_url)
+          .sort((a, b) => {
+            const numA = a.match(/(\d+)(?=\.\w*$)/)[0];
+            const numB = b.match(/(\d+)(?=\.\w*$)/)[0];
+            return numA.localeCompare(numB, undefined, { numeric: true });
+          })
+      : [];
+  }, [project]);
+
   const maxSteps = images.length;
   const cleanName = project?.name.replace('OPL-Theme-', '');
 
@@ -48,6 +67,19 @@ const PreviewModal = ({ open, handleClose, project }) => {
       setActiveStep(0);
     }
   }, [open]);
+
+  // Calculate Apect Ratio
+  useEffect(() => {
+    if (images[activeStep]) {
+      const img = new Image();
+      img.src = images[activeStep];
+      img.onload = () => {
+        const aspectRatio = img.height / img.width;
+        const paddingTop = `${aspectRatio * 100}%`;
+        setPaddingTop(paddingTop);
+      };
+    }
+  }, [activeStep, images]);
 
   const handleNext = () => {
     setFade(false);
@@ -83,12 +115,14 @@ const PreviewModal = ({ open, handleClose, project }) => {
             in={fade}
             timeout={300}
           >
-            <CardMedia
-              component='img'
-              height='400'
-              image={images[activeStep]}
-              alt={`Slide ${activeStep + 1}`}
-            />
+            <div style={aspectRatioContainer(paddingTop)}>
+              <CardMedia
+                component='img'
+                style={aspectRatioContent}
+                image={images[activeStep]}
+                alt={`Slide ${activeStep + 1}`}
+              />
+            </div>
           </Fade>
           <MobileStepper
             steps={maxSteps}

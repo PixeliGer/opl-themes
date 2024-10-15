@@ -22,17 +22,35 @@ const cardStyle = {
   },
 };
 
+const mediaWrapperStyle = {
+  position: 'relative',
+  width: '100%',
+  paddingTop: '100%', // 1:1 aspect ratio for square
+};
+
+const mediaStyle = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+};
+
 const ProjectCard = ({ project, onPreviewClick }) => {
   const cleanName = project.name.replace('OPL-Theme-', '');
 
   return (
     <Card sx={cardStyle}>
-      <CardMedia
-        component='img'
-        height='280'
-        image={project.assets[0].download_url}
-        alt={project.name}
-      />
+      <div style={mediaWrapperStyle}>
+        <CardMedia
+          component='img'
+          height='280'
+          image={project.assets[0].download_url}
+          alt={project.name}
+          style={mediaStyle}
+        />
+      </div>
       <CardContent sx={{ flexGrow: 1 }}>
         <Typography
           gutterBottom
