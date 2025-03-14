@@ -26,9 +26,22 @@ const Home = () => {
         const projectsWithAssetsAndReleases = await Promise.all(
           filteredProjects.map(async (project) => {
             try {
-              const assetsResponse = await fetch(
-                `https://api.github.com/repos/pixeliger/${project.name}/contents/assets`
-              );
+              const baseRepoUrl = `https://api.github.com/repos/pixeliger/${project.name}`;
+              const assetsUrl = `${baseRepoUrl}/contents/assets`;
+              const screenshotsUrl = `${assetsUrl}/screenshots`;
+              const releaseUrl = `https://github.com/pixeliger/${project.name}/releases`;
+
+              const assetsResponse = await fetch(assetsUrl);
+              if (assetsResponse.status !== 200) {
+                console.warn(`Assets folder not found for project ${project.name}`);
+                return {
+                  ...project,
+                  assets: [],
+                  screenshots: [],
+                  release_url: releaseUrl,
+                };
+              }
+
               const assets = await assetsResponse.json();
               const assetImages = assets.filter(
                 (item) =>
@@ -36,17 +49,15 @@ const Home = () => {
                   item.name.match(/\.(jpg|jpeg|png|gif)$/)
               );
 
-              const screenshotsResponse = await fetch(
-                `https://api.github.com/repos/pixeliger/${project.name}/contents/assets/screenshots`
-              );
-              const screenshots = await screenshotsResponse.json();
+              const screenshotsResponse = await fetch(screenshotsUrl);
+              const screenshots = screenshotsResponse.status === 200
+                ? await screenshotsResponse.json()
+                : [];
               const screenshotImages = screenshots.filter(
                 (item) =>
                   item.type === 'file' &&
                   item.name.match(/\.(jpg|jpeg|png|gif)$/)
               );
-
-              const releaseUrl = `https://github.com/pixeliger/${project.name}/releases`;
 
               return {
                 ...project,
