@@ -75,6 +75,7 @@ const ProjectCard = ({ project, onPreviewClick }) => {
           variant='outlined'
           href={project.html_url}
           target='_blank'
+          rel='noopener noreferrer'
         >
           Link
         </Button>

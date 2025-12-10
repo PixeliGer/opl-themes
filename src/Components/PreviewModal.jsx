@@ -68,15 +68,27 @@ const PreviewModal = ({ open, handleClose, project }) => {
     }
   }, [open]);
 
-  // Calculate Apect Ratio
+  // Calculate Aspect Ratio with proper cleanup
   useEffect(() => {
     if (images[activeStep]) {
       const img = new Image();
+      let isMounted = true;
+
+      const handleLoad = () => {
+        if (isMounted) {
+          const aspectRatio = img.height / img.width;
+          const paddingTop = `${aspectRatio * 100}%`;
+          setPaddingTop(paddingTop);
+        }
+      };
+
       img.src = images[activeStep];
-      img.onload = () => {
-        const aspectRatio = img.height / img.width;
-        const paddingTop = `${aspectRatio * 100}%`;
-        setPaddingTop(paddingTop);
+      img.onload = handleLoad;
+
+      // Cleanup to prevent state updates after unmount
+      return () => {
+        isMounted = false;
+        img.onload = null;
       };
     }
   }, [activeStep, images]);

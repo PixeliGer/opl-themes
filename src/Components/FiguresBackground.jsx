@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import './FiguresBackground.scss';
 
 const generateShapes = (numShapes) => {
@@ -11,6 +12,7 @@ const generateShapes = (numShapes) => {
     const animationDelay = `${Math.random() * -5}s`;
 
     shapes.push({
+      id: i,
       className: shapeType,
       style: { top, left, animationDelay },
     });
@@ -20,14 +22,15 @@ const generateShapes = (numShapes) => {
 };
 
 const FiguresBackground = () => {
-  const shapes = generateShapes(30); // Generate 30 shapes dynamically
+  // Memoize shapes to prevent unnecessary regeneration on re-renders
+  const shapes = useMemo(() => generateShapes(30), []);
 
   return (
     <div className='backwrap'>
       <div className='back-shapes'>
-        {shapes.map((shape, index) => (
+        {shapes.map((shape) => (
           <span
-            key={index}
+            key={shape.id}
             className={`floating ${shape.className}`}
             style={shape.style}
           ></span>

@@ -26,6 +26,7 @@ const Footer = () => {
             href='https://github.com/PixeliGer'
             underline='none'
             target='_blank'
+            rel='noopener noreferrer'
           >
             ❴ PixeliGer ❵{' '}
           </Link>
