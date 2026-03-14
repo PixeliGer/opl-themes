@@ -23,12 +23,12 @@ const Home = () => {
         // Fetch user repositories
         const response = await fetch(
           getGitHubUrl(`/users/${API_CONFIG.GITHUB_USERNAME}/repos`),
-          { signal: abortController.signal }
+          { signal: abortController.signal },
         );
 
         if (!response.ok) {
           throw new Error(
-            `GitHub API error: ${response.status} ${response.statusText}`
+            `GitHub API error: ${response.status} ${response.statusText}`,
           );
         }
 
@@ -40,7 +40,7 @@ const Home = () => {
 
         // Filter projects with OPL-Theme naming convention
         const filteredProjects = data.filter((project) =>
-          project?.name?.includes(API_CONFIG.REPO_NAME_FILTER)
+          project?.name?.includes(API_CONFIG.REPO_NAME_FILTER),
         );
 
         // Fetch assets and releases for each project
@@ -48,7 +48,7 @@ const Home = () => {
           filteredProjects.map(async (project) => {
             try {
               const baseRepoUrl = getGitHubUrl(
-                `/repos/${API_CONFIG.GITHUB_USERNAME}/${project.name}`
+                `/repos/${API_CONFIG.GITHUB_USERNAME}/${project.name}`,
               );
               const assetsUrl = `${baseRepoUrl}/contents/assets`;
               const screenshotsUrl = `${assetsUrl}/screenshots`;
@@ -61,7 +61,7 @@ const Home = () => {
 
               if (assetsResponse.status !== 200) {
                 console.warn(
-                  `Assets folder not found for project ${project.name}`
+                  `Assets folder not found for project ${project.name}`,
                 );
                 return {
                   ...project,
@@ -80,7 +80,7 @@ const Home = () => {
               const assetImages = assets.filter(
                 (item) =>
                   item?.type === 'file' &&
-                  API_CONFIG.IMAGE_EXTENSIONS.test(item.name)
+                  API_CONFIG.IMAGE_EXTENSIONS.test(item.name),
               );
 
               // Fetch screenshots folder
@@ -95,7 +95,7 @@ const Home = () => {
                   screenshotImages = screenshots.filter(
                     (item) =>
                       item?.type === 'file' &&
-                      API_CONFIG.IMAGE_EXTENSIONS.test(item.name)
+                      API_CONFIG.IMAGE_EXTENSIONS.test(item.name),
                   );
                 }
               }
@@ -113,7 +113,7 @@ const Home = () => {
               }
               console.error(
                 `Error fetching contents for project ${project.name}:`,
-                error
+                error,
               );
               return {
                 ...project,
@@ -122,12 +122,12 @@ const Home = () => {
                 release_url: '',
               };
             }
-          })
+          }),
         );
 
         // Filter out null results from aborted requests
         const validProjects = projectsWithAssetsAndReleases.filter(
-          (p) => p !== null
+          (p) => p !== null,
         );
 
         setProjects(validProjects);
@@ -177,9 +177,7 @@ const Home = () => {
             {Array.from(new Array(6)).map((_, index) => (
               <Grid
                 item
-                xs={12}
-                sm={6}
-                md={4}
+                size={{ xs: 12, sm: 6, md: 4 }}
                 key={index}
               >
                 <Skeleton
@@ -205,6 +203,7 @@ const Home = () => {
             projects={projects}
             onPreviewClick={handleOpenModal}
           />
+          // <DummyGrid />
         )}
       </Container>
       <PreviewModal

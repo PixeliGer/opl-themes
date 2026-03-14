@@ -5,15 +5,13 @@ const ProjectList = ({ projects, onPreviewClick }) => {
   return (
     <Grid
       container
-      spacing={4}
+      spacing={{ xs: 4, md: 4 }}
       justify='center'
     >
       {projects.map((project) => (
         <Grid
           item
-          xs={12}
-          sm={6}
-          md={4}
+          size={{ xs: 12, sm: 6, md: 4 }}
           key={project.id}
         >
           <ProjectCard

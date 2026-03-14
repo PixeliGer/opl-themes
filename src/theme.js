@@ -5,8 +5,9 @@ const darkTheme = createTheme({
     mode: 'dark',
   },
   typography: {
+    fontFamily: "'Roboto Condensed', sans-serif",
     body: {
-      fontFamily: "'Poppins', sans-serif",
+      fontFamily: "'Roboto Condensed', sans-serif",
       fontWeight: 400,
     },
   },
