@@ -48,6 +48,7 @@ const PreviewModal = ({ open, handleClose, project }) => {
   const [fade, setFade] = useState(true);
   const [paddingTop, setPaddingTop] = useState('56.25%');
   const [displayedImage, setDisplayedImage] = useState(placeholderWide);
+  const [imageCache, setImageCache] = useState({});
 
   const images = useMemo(() => {
     return project
@@ -70,6 +71,26 @@ const PreviewModal = ({ open, handleClose, project }) => {
       setDisplayedImage(placeholderWide);
     }
   }, [open]);
+
+  // Prefetch adjacent images for smooth navigation
+  useEffect(() => {
+    if (images.length === 0) return;
+
+    const prefetchImage = (index) => {
+      if (index >= 0 && index < images.length && !imageCache[index]) {
+        const img = new Image();
+        img.src = images[index];
+        img.onload = () => {
+          setImageCache((prev) => ({ ...prev, [index]: true }));
+        };
+      }
+    };
+
+    // Prefetch current, next, and previous
+    prefetchImage(activeStep - 1);
+    prefetchImage(activeStep);
+    prefetchImage(activeStep + 1);
+  }, [activeStep, images, imageCache]);
 
   // Calculate Aspect Ratio with proper cleanup and error handling
   useEffect(() => {

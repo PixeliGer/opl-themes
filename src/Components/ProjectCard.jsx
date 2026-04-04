@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import placeholder from '../assets/placeholder.svg';
 
 const cardStyle = {
@@ -42,8 +42,35 @@ const mediaStyle = {
 const ProjectCard = ({ project, onPreviewClick }) => {
   const cleanName = project.name.replace('OPL-Theme-', '');
   const [imageSrc, setImageSrc] = useState(placeholder);
+  const [isVisible, setIsVisible] = useState(false);
+  const cardRef = useRef(null);
 
+  // Intersection Observer: Only load when visible
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      {
+        rootMargin: '50px', // Start loading 50px before entering viewport
+        threshold: 0.01,
+      }
+    );
+
+    if (cardRef.current) {
+      observer.observe(cardRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Load image only after intersection detected
+  useEffect(() => {
+    if (!isVisible) return;
+
     if (project.assets && project.assets[0] && project.assets[0].download_url) {
       const img = new Image();
       img.src = project.assets[0].download_url;
@@ -52,10 +79,10 @@ const ProjectCard = ({ project, onPreviewClick }) => {
     } else {
       setImageSrc(placeholder);
     }
-  }, [project.assets]);
+  }, [isVisible, project.assets]);
 
   return (
-    <Card sx={cardStyle}>
+    <Card ref={cardRef} sx={cardStyle}>
       <div style={mediaWrapperStyle}>
         <CardMedia
           component='img'
