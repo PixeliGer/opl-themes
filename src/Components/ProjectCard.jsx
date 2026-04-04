@@ -8,6 +8,8 @@ import {
 } from '@mui/material';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { useState, useEffect } from 'react';
+import placeholder from '../assets/placeholder.svg';
 
 const cardStyle = {
   display: 'flex',
@@ -39,6 +41,18 @@ const mediaStyle = {
 
 const ProjectCard = ({ project, onPreviewClick }) => {
   const cleanName = project.name.replace('OPL-Theme-', '');
+  const [imageSrc, setImageSrc] = useState(placeholder);
+
+  useEffect(() => {
+    if (project.assets && project.assets[0] && project.assets[0].download_url) {
+      const img = new Image();
+      img.src = project.assets[0].download_url;
+      img.onload = () => setImageSrc(project.assets[0].download_url);
+      img.onerror = () => setImageSrc(placeholder);
+    } else {
+      setImageSrc(placeholder);
+    }
+  }, [project.assets]);
 
   return (
     <Card sx={cardStyle}>
@@ -46,7 +60,7 @@ const ProjectCard = ({ project, onPreviewClick }) => {
         <CardMedia
           component='img'
           height='280'
-          image={project.assets[0].download_url}
+          image={imageSrc}
           alt={project.name}
           style={mediaStyle}
         />

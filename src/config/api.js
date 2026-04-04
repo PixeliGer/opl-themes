@@ -7,7 +7,7 @@ export const API_CONFIG = {
   // Repository name filter
   REPO_NAME_FILTER: 'OPL-Theme',
   // Image file extensions to filter
-  IMAGE_EXTENSIONS: /\.(jpg|jpeg|png|gif)$/i,
+  IMAGE_EXTENSIONS: /\.(jpg|jpeg|png|gif|webp)$/i,
   // API request timeout in milliseconds
   REQUEST_TIMEOUT: 10000,
 };

@@ -14,6 +14,7 @@ import {
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
+import placeholderWide from '../assets/placeholder_wide.svg';
 
 const style = {
   position: 'absolute',
@@ -46,16 +47,17 @@ const PreviewModal = ({ open, handleClose, project }) => {
   const [activeStep, setActiveStep] = useState(0);
   const [fade, setFade] = useState(true);
   const [paddingTop, setPaddingTop] = useState('56.25%');
+  const [displayedImage, setDisplayedImage] = useState(placeholderWide);
 
   const images = useMemo(() => {
     return project
       ? project.screenshots
-          .map((screenshot) => screenshot.download_url)
-          .sort((a, b) => {
-            const numA = a.match(/(\d+)(?=\.\w*$)/)[0];
-            const numB = b.match(/(\d+)(?=\.\w*$)/)[0];
-            return numA.localeCompare(numB, undefined, { numeric: true });
-          })
+        .map((screenshot) => screenshot.download_url)
+        .sort((a, b) => {
+          const numA = a.match(/(\d+)(?=\.\w*$)/)[0];
+          const numB = b.match(/(\d+)(?=\.\w*$)/)[0];
+          return numA.localeCompare(numB, undefined, { numeric: true });
+        })
       : [];
   }, [project]);
 
@@ -65,10 +67,11 @@ const PreviewModal = ({ open, handleClose, project }) => {
   useEffect(() => {
     if (open) {
       setActiveStep(0);
+      setDisplayedImage(placeholderWide);
     }
   }, [open]);
 
-  // Calculate Aspect Ratio with proper cleanup
+  // Calculate Aspect Ratio with proper cleanup and error handling
   useEffect(() => {
     if (images[activeStep]) {
       const img = new Image();
@@ -79,17 +82,28 @@ const PreviewModal = ({ open, handleClose, project }) => {
           const aspectRatio = img.height / img.width;
           const paddingTop = `${aspectRatio * 100}%`;
           setPaddingTop(paddingTop);
+          setDisplayedImage(images[activeStep]);
+        }
+      };
+
+      const handleError = () => {
+        if (isMounted) {
+          setDisplayedImage(placeholderWide);
         }
       };
 
       img.src = images[activeStep];
       img.onload = handleLoad;
+      img.onerror = handleError;
 
       // Cleanup to prevent state updates after unmount
       return () => {
         isMounted = false;
         img.onload = null;
+        img.onerror = null;
       };
+    } else {
+      setDisplayedImage(placeholderWide);
     }
   }, [activeStep, images]);
 
@@ -131,7 +145,7 @@ const PreviewModal = ({ open, handleClose, project }) => {
               <CardMedia
                 component='img'
                 style={aspectRatioContent}
-                image={images[activeStep]}
+                image={displayedImage}
                 alt={`Slide ${activeStep + 1}`}
               />
             </div>
