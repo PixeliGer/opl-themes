@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import PropTypes from 'prop-types';
 import {
   Modal,
   Typography,
@@ -10,13 +11,14 @@ import {
   MobileStepper,
   CardActions,
   IconButton,
+  Box,
 } from '@mui/material';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import placeholderWide from '../assets/placeholder_wide.svg';
 
-const style = {
+const cardSx = {
   position: 'absolute',
   top: '50%',
   left: '50%',
@@ -29,13 +31,13 @@ const style = {
   p: 4,
 };
 
-const aspectRatioContainer = (paddingTop) => ({
+const mediaContainerSx = (paddingTop) => ({
   position: 'relative',
   width: '100%',
-  paddingTop, // Apply the calculated padding-top
+  paddingTop,
 });
 
-const aspectRatioContent = {
+const mediaSx = {
   position: 'absolute',
   top: 0,
   left: 0,
@@ -45,104 +47,84 @@ const aspectRatioContent = {
 
 const PreviewModal = ({ open, handleClose, project }) => {
   const [activeStep, setActiveStep] = useState(0);
-  const [fade, setFade] = useState(true);
   const [paddingTop, setPaddingTop] = useState('56.25%');
   const [displayedImage, setDisplayedImage] = useState(placeholderWide);
-  const [imageCache, setImageCache] = useState({});
+  const imageCache = useRef({});
 
   const images = useMemo(() => {
-    return project
-      ? project.screenshots
-        .map((screenshot) => screenshot.download_url)
-        .sort((a, b) => {
-          const numA = a.match(/(\d+)(?=\.\w*$)/)[0];
-          const numB = b.match(/(\d+)(?=\.\w*$)/)[0];
-          return numA.localeCompare(numB, undefined, { numeric: true });
-        })
-      : [];
+    if (!project) return [];
+    return [...project.screenshots]
+      .sort((a, b) => {
+        const numA = a.download_url.match(/(\d+)(?=\.\w*$)/)?.[0] || '0';
+        const numB = b.download_url.match(/(\d+)(?=\.\w*$)/)?.[0] || '0';
+        return numA.localeCompare(numB, undefined, { numeric: true });
+      })
+      .map((s) => s.download_url);
   }, [project]);
 
   const maxSteps = images.length;
-  const cleanName = project?.name.replace('OPL-Theme-', '');
+  const cleanName = project?.name?.replace('OPL-Theme-', '') || '';
+  const hasMultiple = maxSteps > 1;
 
   useEffect(() => {
     if (open) {
       setActiveStep(0);
       setDisplayedImage(placeholderWide);
+      setPaddingTop('56.25%');
+      imageCache.current = {};
     }
   }, [open]);
 
-  // Prefetch adjacent images for smooth navigation
+  const prefetchImage = useCallback((index) => {
+    if (index < 0 || index >= images.length || imageCache.current[index]) return;
+
+    const img = new Image();
+    img.onload = () => { imageCache.current[index] = true; };
+    img.onerror = () => { imageCache.current[index] = false; };
+    img.src = images[index];
+  }, [images]);
+
   useEffect(() => {
-    if (images.length === 0) return;
-
-    const prefetchImage = (index) => {
-      if (index >= 0 && index < images.length && !imageCache[index]) {
-        const img = new Image();
-        img.src = images[index];
-        img.onload = () => {
-          setImageCache((prev) => ({ ...prev, [index]: true }));
-        };
-      }
-    };
-
-    // Prefetch current, next, and previous
+    if (!hasMultiple) return;
     prefetchImage(activeStep - 1);
     prefetchImage(activeStep);
     prefetchImage(activeStep + 1);
-  }, [activeStep, images, imageCache]);
+  }, [activeStep, prefetchImage, hasMultiple]);
 
-  // Calculate Aspect Ratio with proper cleanup and error handling
   useEffect(() => {
-    if (images[activeStep]) {
-      const img = new Image();
-      let isMounted = true;
-
-      const handleLoad = () => {
-        if (isMounted) {
-          const aspectRatio = img.height / img.width;
-          const paddingTop = `${aspectRatio * 100}%`;
-          setPaddingTop(paddingTop);
-          setDisplayedImage(images[activeStep]);
-        }
-      };
-
-      const handleError = () => {
-        if (isMounted) {
-          setDisplayedImage(placeholderWide);
-        }
-      };
-
-      img.src = images[activeStep];
-      img.onload = handleLoad;
-      img.onerror = handleError;
-
-      // Cleanup to prevent state updates after unmount
-      return () => {
-        isMounted = false;
-        img.onload = null;
-        img.onerror = null;
-      };
-    } else {
+    if (!images[activeStep]) {
       setDisplayedImage(placeholderWide);
+      return;
     }
+
+    const img = new Image();
+    let isMounted = true;
+
+    img.onload = () => {
+      if (isMounted) {
+        setPaddingTop(`${(img.height / img.width) * 100}%`);
+        setDisplayedImage(images[activeStep]);
+      }
+    };
+    img.onerror = () => {
+      if (isMounted) setDisplayedImage(placeholderWide);
+    };
+    img.src = images[activeStep];
+
+    return () => {
+      isMounted = false;
+      img.onload = null;
+      img.onerror = null;
+    };
   }, [activeStep, images]);
 
-  const handleNext = () => {
-    setFade(false);
-    setTimeout(() => {
-      setActiveStep((prevActiveStep) => prevActiveStep + 1);
-      setFade(true);
-    }, 200);
-  };
+  const handleNext = useCallback(() => {
+    setActiveStep((prev) => Math.min(prev + 1, maxSteps - 1));
+  }, [maxSteps]);
 
-  const handleBack = () => {
-    setFade(false);
-    setTimeout(() => {
-      setActiveStep((prevActiveStep) => prevActiveStep - 1);
-      setFade(true);
-    }, 200);
-  };
+  const handleBack = useCallback(() => {
+    setActiveStep((prev) => Math.max(prev - 1, 0));
+  }, []);
 
   return (
     <Modal
@@ -150,84 +132,61 @@ const PreviewModal = ({ open, handleClose, project }) => {
       onClose={handleClose}
       aria-labelledby='modal-title'
       aria-describedby='modal-description'
-      slotProps={{
-        backdrop: {
-          TransitionComponent: Fade,
-        },
-      }}
+      slotProps={{ backdrop: { TransitionComponent: Fade } }}
     >
       <Fade in={open}>
-        <Card sx={style}>
-          <Fade
-            in={fade}
-            timeout={300}
-          >
-            <div style={aspectRatioContainer(paddingTop)}>
-              <CardMedia
-                component='img'
-                style={aspectRatioContent}
-                image={displayedImage}
-                alt={`Slide ${activeStep + 1}`}
-              />
-            </div>
-          </Fade>
-          <MobileStepper
-            steps={maxSteps}
-            position='static'
-            activeStep={activeStep}
-            nextButton={
-              <IconButton
-                color='primary'
-                onClick={handleNext}
-                disabled={activeStep === maxSteps - 1}
-              >
-                <NavigateNextIcon />
-              </IconButton>
-            }
-            backButton={
-              <IconButton
-                color='primary'
-                onClick={handleBack}
-                disabled={activeStep === 0}
-              >
-                <NavigateBeforeIcon />
-              </IconButton>
-            }
-          />
+        <Card sx={cardSx}>
+          <Box sx={mediaContainerSx(paddingTop)}>
+            <CardMedia
+              component='img'
+              sx={mediaSx}
+              image={displayedImage}
+              alt={`Slide ${activeStep + 1}`}
+            />
+          </Box>
+          {hasMultiple && (
+            <MobileStepper
+              steps={maxSteps}
+              position='static'
+              activeStep={activeStep}
+              nextButton={
+                <IconButton
+                  color='primary'
+                  onClick={handleNext}
+                  disabled={activeStep === maxSteps - 1}
+                >
+                  <NavigateNextIcon />
+                </IconButton>
+              }
+              backButton={
+                <IconButton
+                  color='primary'
+                  onClick={handleBack}
+                  disabled={activeStep === 0}
+                >
+                  <NavigateBeforeIcon />
+                </IconButton>
+              }
+            />
+          )}
           <CardContent>
-            <Typography
-              id='modal-title'
-              variant='h6'
-              component='h2'
-            >
-              {project ? cleanName : 'Project Preview'}
+            <Typography id='modal-title' variant='h6' component='h2'>
+              {cleanName || 'Project Preview'}
             </Typography>
-            <Typography
-              id='modal-description'
-              sx={{ mt: 2 }}
-            >
-              {project
-                ? project.description
-                : 'This is a detailed project description'}
+            <Typography id='modal-description' sx={{ mt: 2 }}>
+              {project?.description || 'No description available'}
             </Typography>
           </CardContent>
-          <CardActions
-            sx={{ p: 2 }}
-            style={{ justifyContent: 'space-between' }}
-          >
+          <CardActions sx={{ p: 2, justifyContent: 'space-between' }}>
             <Button
               startIcon={<CloudDownloadIcon />}
               variant='outlined'
-              href={project ? project.release_url : '#'}
+              href={project?.release_url || '#'}
               target='_blank'
             >
               Download
             </Button>
-            <Button
-              onClick={handleClose}
-              variant='outlined'
-              color='error'
-            >
+            <Button onClick={handleClose} variant='outlined' color='error'>
               Close
             </Button>
           </CardActions>
@@ -235,6 +194,19 @@ const PreviewModal = ({ open, handleClose, project }) => {
       </Fade>
     </Modal>
   );
+};
+
+PreviewModal.propTypes = {
+  open: PropTypes.bool.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  project: PropTypes.shape({
+    name: PropTypes.string,
+    description: PropTypes.string,
+    release_url: PropTypes.string,
+    screenshots: PropTypes.arrayOf(
+      PropTypes.shape({ download_url: PropTypes.string }),
+    ),
+  }),
 };
 
 export default PreviewModal;

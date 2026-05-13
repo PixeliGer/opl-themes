@@ -1,21 +1,21 @@
 import { AppBar, Toolbar, Typography, Container } from '@mui/material';
 import GamesIcon from '@mui/icons-material/Games';
-import './Header.scss';
 
 const Header = () => {
   return (
     <AppBar
       position='fixed'
-      className='custom-header'
+      elevation={0}
+      sx={{
+        backgroundImage: 'none',
+        backgroundColor: 'rgba(18, 18, 18, 0.75)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+      }}
     >
       <Container maxWidth='lg'>
         <Toolbar disableGutters>
-          <GamesIcon
-            color='primary'
-            sx={{
-              mr: 1,
-            }}
-          />
+          <GamesIcon color='primary' sx={{ mr: 1 }} />
           <Typography variant='h6'>PixeliGer OPL Themes</Typography>
         </Toolbar>
       </Container>

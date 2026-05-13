@@ -1,12 +1,10 @@
 import { createTheme } from '@mui/material/styles';
 
 const darkTheme = createTheme({
-  palette: {
-    mode: 'dark',
-  },
+  palette: { mode: 'dark' },
   typography: {
     fontFamily: "'Roboto Condensed', sans-serif",
-    body: {
+    body1: {
       fontFamily: "'Roboto Condensed', sans-serif",
       fontWeight: 400,
     },

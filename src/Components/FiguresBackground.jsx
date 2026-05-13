@@ -1,29 +1,27 @@
 import { useMemo } from 'react';
 import './FiguresBackground.scss';
 
-const generateShapes = (numShapes) => {
+const SHAPE_TYPES = ['circle', 'triangle', 'cross', 'square'];
+const NUM_SHAPES = 30;
+
+const generateShapes = (count) => {
   const shapes = [];
-  const shapeTypes = ['circle', 'triangle', 'cross', 'square'];
-
-  for (let i = 0; i < numShapes; i++) {
-    const shapeType = shapeTypes[Math.floor(Math.random() * shapeTypes.length)];
-    const top = `${Math.random() * 100}%`;
-    const left = `${Math.random() * 100}%`;
-    const animationDelay = `${Math.random() * -5}s`;
-
+  for (let i = 0; i < count; i++) {
     shapes.push({
       id: i,
-      className: shapeType,
-      style: { top, left, animationDelay },
+      className: SHAPE_TYPES[i % SHAPE_TYPES.length],
+      style: {
+        top: `${((i * 17 + 3) % 100)}%`,
+        left: `${((i * 31 + 7) % 100)}%`,
+        animationDelay: `${(i % 5) * -1}s`,
+      },
     });
   }
-
   return shapes;
 };
 
 const FiguresBackground = () => {
-  // Memoize shapes to prevent unnecessary regeneration on re-renders
-  const shapes = useMemo(() => generateShapes(30), []);
+  const shapes = useMemo(() => generateShapes(NUM_SHAPES), []);
 
   return (
     <div className='backwrap'>
@@ -33,7 +31,7 @@ const FiguresBackground = () => {
             key={shape.id}
             className={`floating ${shape.className}`}
             style={shape.style}
-          ></span>
+          />
         ))}
       </div>
     </div>

@@ -1,8 +1,14 @@
-import { Box, Typography } from '@mui/material';
-import Link from '@mui/material/Link';
-import './Footer.scss';
+import { keyframes } from '@emotion/react';
+import { styled } from '@mui/material/styles';
+import { Box, Typography, Link } from '@mui/material';
 
-const footerStyle = {
+const gradientAnimation = keyframes`
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+`;
+
+const FooterBox = styled(Box)({
   position: 'fixed',
   bottom: 0,
   width: '100%',
@@ -11,28 +17,32 @@ const footerStyle = {
   textAlign: 'center',
   padding: '10px 0',
   color: '#fff',
-};
+});
+
+const GradientLink = styled(Link)({
+  background: 'linear-gradient(270deg, #ff6ec4, #7873f5, #4ade80, #facc15)',
+  backgroundSize: '800% 800%',
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  animation: `${gradientAnimation} 20s ease infinite`,
+  fontWeight: 700,
+});
 
 const Footer = () => {
   return (
-    <Box sx={footerStyle}>
-      <Typography
-        variant='caption'
-        sx={{ fontFamily: 'Roboto Mono, sans-serif' }}
-      >
+    <FooterBox>
+      <Typography variant='caption' sx={{ fontFamily: 'Roboto Mono, sans-serif' }}>
         Designed and Coded by{' '}
-        <b className='gradient-text'>
-          <Link
-            href='https://github.com/PixeliGer'
-            underline='none'
-            target='_blank'
-            rel='noopener noreferrer'
-          >
-            ❴ PixeliGer ❵{' '}
-          </Link>
-        </b>
+        <GradientLink
+          href='https://github.com/PixeliGer'
+          underline='none'
+          target='_blank'
+          rel='noopener noreferrer'
+        >
+          {'\u2774'} PixeliGer {'\u2775'}
+        </GradientLink>
       </Typography>
-    </Box>
+    </FooterBox>
   );
 };
 
