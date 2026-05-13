@@ -1,5 +1,5 @@
 import { Grid } from '@mui/material';
-import ProjectCard from './ProjectCard';
+import SquareProjectCard from './SquareProjectCard';
 
 const ProjectList = ({ projects, onPreviewClick }) => {
   return (
@@ -11,10 +11,10 @@ const ProjectList = ({ projects, onPreviewClick }) => {
       {projects.map((project) => (
         <Grid
           item
-          size={{ xs: 12, sm: 6, md: 4 }}
+          size={{ xs: 6, sm: 6, md: 4, lg: 3 }}
           key={project.id}
         >
-          <ProjectCard
+          <SquareProjectCard
             project={project}
             onPreviewClick={onPreviewClick}
           />
