@@ -32,7 +32,7 @@ const Footer = () => {
   return (
     <FooterBox>
       <Typography variant='caption' sx={{ fontFamily: 'Roboto Mono, sans-serif' }}>
-        Designed and Coded by{' '}
+        Made by{' '}
         <GradientLink
           href='https://github.com/PixeliGer'
           underline='none'
