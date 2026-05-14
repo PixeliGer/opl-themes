@@ -1,12 +1,13 @@
+import { lazy, Suspense } from 'react';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import './App.css';
 
 import Home from './Pages/Home';
-import FiguresBackground from './Components/FiguresBackground';
 import ErrorBoundary from './Components/ErrorBoundary';
-
 import darkTheme from './theme';
+
+const FiguresBackground = lazy(() => import('./Components/FiguresBackground'));
 
 const App = () => {
   return (
@@ -14,7 +15,9 @@ const App = () => {
       <ThemeProvider theme={darkTheme}>
         <CssBaseline />
         <div className='App'>
-          <FiguresBackground />
+          <Suspense fallback={null}>
+            <FiguresBackground />
+          </Suspense>
           <Home />
         </div>
       </ThemeProvider>

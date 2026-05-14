@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { API_CONFIG, getGitHubUrl } from '../config/api';
 
+const createMergedSignal = (signal) => {
+  const timeoutSignal = AbortSignal.timeout(API_CONFIG.REQUEST_TIMEOUT);
+  if (!signal) return timeoutSignal;
+  return AbortSignal.any([signal, timeoutSignal]);
+};
+
 const fetchProjectAssets = async (project, signal) => {
   const baseRepoUrl = getGitHubUrl(
     `/repos/${API_CONFIG.GITHUB_USERNAME}/${project.name}`,
@@ -8,9 +14,14 @@ const fetchProjectAssets = async (project, signal) => {
   const assetsUrl = `${baseRepoUrl}/contents/assets`;
   const screenshotsUrl = `${assetsUrl}/screenshots`;
   const releaseUrl = `https://github.com/${API_CONFIG.GITHUB_USERNAME}/${project.name}/releases`;
+  const mergedSignal = createMergedSignal(signal);
 
-  const assetsResponse = await fetch(assetsUrl, { signal });
-  if (assetsResponse.status !== 200) {
+  const [assetsResponse, screenshotsResponse] = await Promise.all([
+    fetch(assetsUrl, { signal: mergedSignal }),
+    fetch(screenshotsUrl, { signal: mergedSignal }).catch(() => null),
+  ]);
+
+  if (!assetsResponse || assetsResponse.status !== 200) {
     return { ...project, assets: [], screenshots: [], release_url: releaseUrl };
   }
 
@@ -25,9 +36,8 @@ const fetchProjectAssets = async (project, signal) => {
       API_CONFIG.IMAGE_EXTENSIONS.test(item.name),
   );
 
-  const screenshotsResponse = await fetch(screenshotsUrl, { signal });
   let screenshotImages = [];
-  if (screenshotsResponse.ok) {
+  if (screenshotsResponse?.ok) {
     const screenshots = await screenshotsResponse.json();
     if (Array.isArray(screenshots)) {
       screenshotImages = screenshots.filter(
@@ -56,9 +66,10 @@ const useGitHubProjects = () => {
     setError(null);
 
     try {
+      const mergedSignal = createMergedSignal(signal);
       const response = await fetch(
         getGitHubUrl(`/users/${API_CONFIG.GITHUB_USERNAME}/repos`),
-        { signal },
+        { signal: mergedSignal },
       );
 
       if (!response.ok) {

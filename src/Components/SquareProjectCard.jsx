@@ -16,14 +16,24 @@ const StyledCard = styled(Card)({
   transition: 'transform 0.3s, box-shadow 0.3s',
   backgroundColor: 'rgba(18, 18, 18, 0.65)',
   backdropFilter: 'blur(10px)',
-  '&:hover': {
-    transform: 'scale(1.02)',
-    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
+  '@media (hover: hover)': {
+    '&:hover': {
+      transform: 'scale(1.02)',
+      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
+      '& .hoverOverlay': {
+        opacity: 1,
+        transform: 'translateY(0)',
+        pointerEvents: 'auto',
+        backdropFilter: 'blur(5px)',
+      },
+    },
+  },
+  '@media (hover: none)': {
     '& .hoverOverlay': {
-      opacity: 1,
+      opacity: 0.7,
       transform: 'translateY(0)',
+      backdropFilter: 'blur(2px)',
       pointerEvents: 'auto',
-      backdropFilter: 'blur(5px)',
     },
   },
 });
@@ -77,7 +87,7 @@ const SquareProjectCard = ({ project, onPreviewClick }) => {
   return (
     <StyledCard ref={cardRef}>
       <Box sx={mediaWrapperStyle}>
-        <CardMedia component='img' image={imageSrc ?? placeholder} alt={name} sx={mediaStyle} />
+        <CardMedia component='img' image={imageSrc ?? placeholder} alt={name} sx={mediaStyle} loading='lazy' />
         <Box className='hoverOverlay' sx={overlayStyle}>
           <Box>
             <Typography gutterBottom variant='h5' component='div'>
@@ -115,6 +125,7 @@ const SquareProjectCard = ({ project, onPreviewClick }) => {
 
 SquareProjectCard.propTypes = {
   project: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
     name: PropTypes.string,
     description: PropTypes.string,
     html_url: PropTypes.string,
@@ -125,4 +136,7 @@ SquareProjectCard.propTypes = {
   onPreviewClick: PropTypes.func.isRequired,
 };
 
-export default memo(SquareProjectCard);
+export default memo(SquareProjectCard, (prev, next) => {
+  return prev.project?.id === next.project?.id &&
+    prev.onPreviewClick === next.onPreviewClick;
+});

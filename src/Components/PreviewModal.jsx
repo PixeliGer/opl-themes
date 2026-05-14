@@ -50,6 +50,13 @@ const PreviewModal = ({ open, handleClose, project }) => {
   const [paddingTop, setPaddingTop] = useState('56.25%');
   const [displayedImage, setDisplayedImage] = useState(placeholderWide);
   const imageCache = useRef({});
+  const imageControllerRef = useRef(null);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
 
   const images = useMemo(() => {
     if (!project) return [];
@@ -75,48 +82,56 @@ const PreviewModal = ({ open, handleClose, project }) => {
     }
   }, [open]);
 
-  const prefetchImage = useCallback((index) => {
-    if (index < 0 || index >= images.length || imageCache.current[index]) return;
-
-    const img = new Image();
-    img.onload = () => { imageCache.current[index] = true; };
-    img.onerror = () => { imageCache.current[index] = false; };
-    img.src = images[index];
-  }, [images]);
-
   useEffect(() => {
-    if (!hasMultiple) return;
-    prefetchImage(activeStep - 1);
-    prefetchImage(activeStep);
-    prefetchImage(activeStep + 1);
-  }, [activeStep, prefetchImage, hasMultiple]);
+    if (!hasMultiple || images.length === 0) return;
 
-  useEffect(() => {
+    const current = imageControllerRef.current;
+    if (current) {
+      current.abort();
+      imageControllerRef.current = null;
+    }
+
     if (!images[activeStep]) {
       setDisplayedImage(placeholderWide);
       return;
     }
 
+    const controller = new AbortController();
+    imageControllerRef.current = controller;
+
     const img = new Image();
-    let isMounted = true;
+    const cleanup = () => {
+      img.onload = null;
+      img.onerror = null;
+    };
+    controller.signal.addEventListener('abort', cleanup, { once: true });
 
     img.onload = () => {
-      if (isMounted) {
+      if (isMountedRef.current) {
         setPaddingTop(`${(img.height / img.width) * 100}%`);
         setDisplayedImage(images[activeStep]);
       }
     };
     img.onerror = () => {
-      if (isMounted) setDisplayedImage(placeholderWide);
+      if (isMountedRef.current) setDisplayedImage(placeholderWide);
     };
     img.src = images[activeStep];
 
+    [activeStep - 1, activeStep + 1].forEach((i) => {
+      if (i >= 0 && i < images.length && !imageCache.current[i]) {
+        imageCache.current[i] = true;
+        const prefetch = new Image();
+        prefetch.src = images[i];
+      }
+    });
+
     return () => {
-      isMounted = false;
-      img.onload = null;
-      img.onerror = null;
+      controller.abort();
+      if (imageControllerRef.current === controller) {
+        imageControllerRef.current = null;
+      }
     };
-  }, [activeStep, images]);
+  }, [activeStep, images, hasMultiple]);
 
   const handleNext = useCallback(() => {
     setActiveStep((prev) => Math.min(prev + 1, maxSteps - 1));
