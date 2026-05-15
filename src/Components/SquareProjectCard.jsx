@@ -1,7 +1,11 @@
 import { memo, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { styled } from '@mui/material/styles';
-import { Card, CardMedia, Typography, Button, Box } from '@mui/material';
+import Card from '@mui/material/Card';
+import CardMedia from '@mui/material/CardMedia';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import useIntersectionObserver from '../hooks/useIntersectionObserver';
@@ -77,17 +81,17 @@ const buttonGroupStyle = {
 const getTitle = (name = '') => name.replace(/^OPL-Theme-/, '').trim();
 const getPrimaryImageUrl = (assets = []) => assets?.[0]?.download_url || null;
 
-const SquareProjectCard = ({ project, onPreviewClick }) => {
+const SquareProjectCard = ({ project, onPreviewClick, priority = false }) => {
   const { name, description, html_url, assets = [] } = project;
   const title = useMemo(() => getTitle(name), [name]);
   const primaryImageUrl = useMemo(() => getPrimaryImageUrl(assets), [assets]);
-  const [cardRef, isVisible] = useIntersectionObserver();
+  const [cardRef, isVisible] = useIntersectionObserver({ rootMargin: priority ? '200px' : '50px' });
   const imageSrc = useLazyImage(primaryImageUrl, isVisible);
 
   return (
     <StyledCard ref={cardRef}>
       <Box sx={mediaWrapperStyle}>
-        <CardMedia component='img' image={imageSrc ?? placeholder} alt={name} sx={mediaStyle} loading='lazy' />
+        <CardMedia component='img' image={imageSrc ?? placeholder} alt={name} sx={mediaStyle} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'auto'} />
         <Box className='hoverOverlay' sx={overlayStyle}>
           <Box>
             <Typography gutterBottom variant='h5' component='div'>
@@ -134,6 +138,7 @@ SquareProjectCard.propTypes = {
     })),
   }).isRequired,
   onPreviewClick: PropTypes.func.isRequired,
+  priority: PropTypes.bool,
 };
 
 export default memo(SquareProjectCard, (prev, next) => {

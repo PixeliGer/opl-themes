@@ -1,6 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
 import { API_CONFIG, getGitHubUrl } from '../config/api';
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_KEY = 'opl_themes_projects';
+
+const getCached = () => {
+  try {
+    const cached = localStorage.getItem(CACHE_KEY);
+    if (!cached) return null;
+    const { data, timestamp } = JSON.parse(cached);
+    return { data, age: Date.now() - timestamp, timestamp };
+  } catch {
+    return null;
+  }
+};
+
+const setCached = (data) => {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+  } catch { /* Storage full or unavailable */ }
+};
+
 const createMergedSignal = (signal) => {
   const timeoutSignal = AbortSignal.timeout(API_CONFIG.REQUEST_TIMEOUT);
   if (!signal) return timeoutSignal;
@@ -62,7 +82,6 @@ const useGitHubProjects = () => {
   const [error, setError] = useState(null);
 
   const fetchProjects = useCallback(async (signal) => {
-    setLoading(true);
     setError(null);
 
     try {
@@ -100,6 +119,7 @@ const useGitHubProjects = () => {
       );
 
       const validProjects = projectsWithAssets.filter(Boolean);
+      setCached(validProjects);
       setProjects(validProjects);
     } catch (err) {
       if (err.name !== 'AbortError') {
@@ -112,9 +132,20 @@ const useGitHubProjects = () => {
   }, []);
 
   useEffect(() => {
-    const abortController = new AbortController();
-    fetchProjects(abortController.signal);
-    return () => abortController.abort();
+    const cached = getCached();
+    if (cached) {
+      setProjects(cached.data);
+      setLoading(false);
+      // Re-fetch in background if stale
+      if (Date.now() - cached.timestamp >= CACHE_TTL) {
+        const abortController = new AbortController();
+        fetchProjects(abortController.signal);
+      }
+    } else {
+      const abortController = new AbortController();
+      fetchProjects(abortController.signal);
+      return () => abortController.abort();
+    }
   }, [fetchProjects]);
 
   return { projects, loading, error };

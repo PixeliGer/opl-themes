@@ -1,6 +1,8 @@
 import { keyframes } from '@emotion/react';
 import { styled } from '@mui/material/styles';
-import { Box, Typography, Link } from '@mui/material';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Link from '@mui/material/Link';
 
 const gradientAnimation = keyframes`
   0% { background-position: 0% 50%; }

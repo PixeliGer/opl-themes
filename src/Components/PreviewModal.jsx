@@ -1,18 +1,16 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
-import {
-  Modal,
-  Typography,
-  Button,
-  Fade,
-  Card,
-  CardContent,
-  CardMedia,
-  MobileStepper,
-  CardActions,
-  IconButton,
-  Box,
-} from '@mui/material';
+import Modal from '@mui/material/Modal';
+import Typography from '@mui/material/Typography';
+import Button from '@mui/material/Button';
+import Fade from '@mui/material/Fade';
+import Card from '@mui/material/Card';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import MobileStepper from '@mui/material/MobileStepper';
+import CardActions from '@mui/material/CardActions';
+import IconButton from '@mui/material/IconButton';
+import Box from '@mui/material/Box';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
@@ -147,7 +145,6 @@ const PreviewModal = ({ open, handleClose, project }) => {
       onClose={handleClose}
       aria-labelledby='modal-title'
       aria-describedby='modal-description'
-      slotProps={{ backdrop: { TransitionComponent: Fade } }}
     >
       <Fade in={open}>
         <Card sx={cardSx}>

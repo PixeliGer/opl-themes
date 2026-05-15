@@ -1,5 +1,8 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
-import { Container, Skeleton, Box, Typography } from '@mui/material';
+import Container from '@mui/material/Container';
+import Skeleton from '@mui/material/Skeleton';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import Header from './../Components/Header';
 import ProjectList from '../Components/ProjectList';
 import Footer from '../Components/Footer';

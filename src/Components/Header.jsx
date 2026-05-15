@@ -1,4 +1,7 @@
-import { AppBar, Toolbar, Typography, Container } from '@mui/material';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
 import GamesIcon from '@mui/icons-material/Games';
 
 const Header = () => {
