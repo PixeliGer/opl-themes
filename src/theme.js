@@ -1,7 +1,7 @@
 import { createTheme } from '@mui/material/styles';
+import { darkPalette, lightPalette } from './styles/palette';
 
-const darkTheme = createTheme({
-  palette: { mode: 'dark' },
+const baseTheme = {
   typography: {
     fontFamily: "'Roboto Condensed', sans-serif",
     body1: {
@@ -9,6 +9,21 @@ const darkTheme = createTheme({
       fontWeight: 400,
     },
   },
+};
+
+export const darkTheme = createTheme({
+  ...baseTheme,
+  palette: { mode: 'dark' },
 });
 
-export default darkTheme;
+export const lightTheme = createTheme({
+  ...baseTheme,
+  palette: { mode: 'light' },
+});
+
+darkTheme.custom = darkPalette;
+lightTheme.custom = lightPalette;
+
+export function getThemeByMode(mode) {
+  return mode === 'light' ? lightTheme : darkTheme;
+}

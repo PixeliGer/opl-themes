@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import PropTypes from 'prop-types';
+import { useTheme } from '@mui/material/styles';
 import Modal from '@mui/material/Modal';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -16,19 +17,6 @@ import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import placeholderWide from '../assets/placeholder_wide.svg';
 
-const cardSx = {
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  transform: 'translate(-50%, -50%)',
-  backgroundColor: 'rgba(18,18,18,0.75)',
-  backdropFilter: 'blur(10px)',
-  width: '90vw',
-  maxWidth: 800,
-  boxShadow: 24,
-  p: 4,
-};
-
 const mediaContainerSx = (paddingTop) => ({
   position: 'relative',
   width: '100%',
@@ -44,6 +32,22 @@ const mediaSx = {
 };
 
 const PreviewModal = ({ open, handleClose, project }) => {
+  const theme = useTheme();
+  const palette = theme.custom;
+
+  const cardSx = {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    backgroundColor: palette.surface.modal,
+    backdropFilter: 'blur(10px)',
+    width: '90vw',
+    maxWidth: 800,
+    boxShadow: 24,
+    p: 4,
+  };
+
   const [activeStep, setActiveStep] = useState(0);
   const [paddingTop, setPaddingTop] = useState('56.25%');
   const [displayedImage, setDisplayedImage] = useState(placeholderWide);

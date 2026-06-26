@@ -1,6 +1,6 @@
 import { memo, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { styled } from '@mui/material/styles';
+import { styled, useTheme } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
@@ -12,18 +12,20 @@ import useIntersectionObserver from '../hooks/useIntersectionObserver';
 import useLazyImage from '../hooks/useLazyImage';
 import placeholder from '../assets/placeholder.svg';
 
-const StyledCard = styled(Card)({
+const StyledCard = styled(Card)(({ theme }) => ({
+  containerType: 'inline-size',
   position: 'relative',
   width: '100%',
   overflow: 'hidden',
-  borderRadius: 8,
+  borderRadius: '8px',
   transition: 'transform 0.3s, box-shadow 0.3s',
-  backgroundColor: 'rgba(18, 18, 18, 0.65)',
+  backgroundColor: theme.custom.surface.card,
   backdropFilter: 'blur(10px)',
+
   '@media (hover: hover)': {
     '&:hover': {
       transform: 'scale(1.02)',
-      boxShadow: '0 20px 40px rgba(0, 0, 0, 0.25)',
+      boxShadow: `0 20px 40px ${theme.custom.surface.shadow}`,
       '& .hoverOverlay': {
         opacity: 1,
         transform: 'translateY(0)',
@@ -32,6 +34,7 @@ const StyledCard = styled(Card)({
       },
     },
   },
+
   '@media (hover: none)': {
     '& .hoverOverlay': {
       opacity: 0.7,
@@ -40,7 +43,21 @@ const StyledCard = styled(Card)({
       pointerEvents: 'auto',
     },
   },
-});
+
+  '@container (max-width: 240px)': {
+    '.card-btn-text': {
+      display: 'none',
+    },
+    '.card-btn': {
+      width: '40px',
+      height: '40px',
+      padding: '8px',
+    },
+    '.card-btn .MuiButton-startIcon': {
+      margin: 0,
+    },
+  },
+}));
 
 const mediaWrapperStyle = {
   position: 'relative',
@@ -56,37 +73,39 @@ const mediaStyle = {
   objectFit: 'cover',
 };
 
-const overlayStyle = {
-  position: 'absolute',
-  inset: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'space-between',
-  padding: 3,
-  backgroundImage: 'linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0) 100%)',
-  color: '#fff',
-  opacity: 0,
-  transform: 'translateY(10px)',
-  transition: 'opacity 0.3s ease, transform 0.3s ease',
-  pointerEvents: 'none',
-};
-
-const buttonGroupStyle = {
-  display: 'flex',
-  gap: 1.5,
-  flexWrap: 'wrap',
-  justifyContent: 'space-between',
-};
-
 const getTitle = (name = '') => name.replace(/^OPL-Theme-/, '').trim();
 const getPrimaryImageUrl = (assets = []) => assets?.[0]?.download_url || null;
 
 const SquareProjectCard = ({ project, onPreviewClick, priority = false }) => {
+  const theme = useTheme();
+  const palette = theme.custom;
   const { name, description, html_url, assets = [] } = project;
   const title = useMemo(() => getTitle(name), [name]);
   const primaryImageUrl = useMemo(() => getPrimaryImageUrl(assets), [assets]);
   const [cardRef, isVisible] = useIntersectionObserver({ rootMargin: priority ? '200px' : '50px' });
   const imageSrc = useLazyImage(primaryImageUrl, isVisible);
+
+  const overlayStyle = {
+    position: 'absolute',
+    inset: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    padding: 3,
+    backgroundImage: `linear-gradient(to top, ${palette.surface.overlay} 0%, transparent 100%)`,
+    color: palette.text.primary,
+    opacity: 0,
+    transform: 'translateY(10px)',
+    transition: 'opacity 0.3s ease, transform 0.3s ease',
+    pointerEvents: 'none',
+  };
+
+  const buttonGroupStyle = {
+    display: 'flex',
+    gap: 1.5,
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  };
 
   return (
     <StyledCard ref={cardRef}>
@@ -104,21 +123,23 @@ const SquareProjectCard = ({ project, onPreviewClick, priority = false }) => {
 
           <Box sx={buttonGroupStyle}>
             <Button
+              className='card-btn'
               startIcon={<GitHubIcon />}
               variant='outlined'
               href={html_url}
               target='_blank'
               rel='noopener noreferrer'
             >
-              Link
+              <span className='card-btn-text'>Link</span>
             </Button>
             <Button
+              className='card-btn'
               startIcon={<VisibilityIcon />}
               variant='outlined'
               color='success'
               onClick={() => onPreviewClick(project)}
             >
-              Preview
+              <span className='card-btn-text'>Preview</span>
             </Button>
           </Box>
         </Box>

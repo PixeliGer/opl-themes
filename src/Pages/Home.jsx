@@ -1,4 +1,5 @@
 import { useState, useCallback, lazy, Suspense } from 'react';
+import { useTheme } from '@mui/material/styles';
 import Container from '@mui/material/Container';
 import Skeleton from '@mui/material/Skeleton';
 import Box from '@mui/material/Box';
@@ -12,23 +13,9 @@ const PreviewModal = lazy(() => import('../Components/PreviewModal'));
 
 const SKELETON_COUNT = 6;
 
-const modalFallback = (
-  <Box
-    sx={{
-      position: 'fixed',
-      inset: 0,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      zIndex: 1300,
-    }}
-  >
-    <Skeleton variant='rectangular' width={600} height={400} sx={{ borderRadius: 2 }} />
-  </Box>
-);
-
 const Home = () => {
+  const theme = useTheme();
+  const palette = theme.custom;
   const { projects, loading, error } = useGitHubProjects();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
@@ -42,6 +29,22 @@ const Home = () => {
     setModalOpen(false);
     setSelectedProject(null);
   }, []);
+
+  const modalFallback = (
+    <Box
+      sx={{
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: palette.surface.backdrop,
+        zIndex: 1300,
+      }}
+    >
+      <Skeleton variant='rectangular' width={600} height={400} sx={{ borderRadius: 2 }} />
+    </Box>
+  );
 
   return (
     <>
