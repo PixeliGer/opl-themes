@@ -1,6 +1,13 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useCallback,
+} from 'react';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { getPalette } from '../styles/palette';
+import { BACKGROUND_OPTIONS, getNextBackground } from '../config/backgrounds';
 
 const ThemeContext = createContext(null);
 
@@ -9,16 +16,16 @@ function getStoredMode() {
   return stored === 'dark' || stored === 'light' ? stored : null;
 }
 
-const BACKGROUND_OPTIONS = ['figures', 'particleWave'];
-
 function getStoredBackground() {
   const stored = localStorage.getItem('background-style');
-  return BACKGROUND_OPTIONS.includes(stored) ? stored : 'figures';
+  return BACKGROUND_OPTIONS.includes(stored) ? stored : BACKGROUND_OPTIONS[0];
 }
 
 export function ThemeProvider({ children }) {
   const prefersDark = useMediaQuery('(prefers-color-scheme: dark)');
-  const [mode, setMode] = useState(() => getStoredMode() || (prefersDark ? 'dark' : 'light'));
+  const [mode, setMode] = useState(
+    () => getStoredMode() || (prefersDark ? 'dark' : 'light'),
+  );
   const [background, setBackground] = useState(getStoredBackground);
 
   useEffect(() => {
@@ -30,7 +37,8 @@ export function ThemeProvider({ children }) {
 
   useEffect(() => {
     localStorage.setItem('theme-mode', mode);
-    document.documentElement.className = mode === 'dark' ? 'dark-theme' : 'light-theme';
+    document.documentElement.className =
+      mode === 'dark' ? 'dark-theme' : 'light-theme';
   }, [mode]);
 
   useEffect(() => {
@@ -38,15 +46,23 @@ export function ThemeProvider({ children }) {
   }, [background]);
 
   const toggleTheme = useCallback(() => {
-    setMode(prev => prev === 'dark' ? 'light' : 'dark');
+    setMode((prev) => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
   const toggleBackground = useCallback(() => {
-    setBackground(prev => prev === 'figures' ? 'particleWave' : 'figures');
+    setBackground((prev) => getNextBackground(prev));
   }, []);
 
   return (
-    <ThemeContext.Provider value={{ mode, toggleTheme, background, toggleBackground, palette: getPalette(mode) }}>
+    <ThemeContext.Provider
+      value={{
+        mode,
+        toggleTheme,
+        background,
+        toggleBackground,
+        palette: getPalette(mode),
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

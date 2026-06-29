@@ -9,10 +9,14 @@ import Tooltip from '@mui/material/Tooltip';
 import GamesIcon from '@mui/icons-material/Games';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useThemeMode } from '../context/ThemeContext';
+import { BACKGROUND_REGISTRY, getNextBackground } from '../config/backgrounds';
 
 const Header = () => {
-  const { mode, toggleTheme } = useThemeMode();
+  const { mode, toggleTheme, toggleBackground, background } = useThemeMode();
+  const nextBgName =
+    BACKGROUND_REGISTRY[getNextBackground(background)]?.name ?? '';
   const theme = useTheme();
   const palette = theme.custom;
 
@@ -47,7 +51,47 @@ const Header = () => {
 
           <Box sx={{ marginLeft: 'auto' }} />
 
-          <Tooltip title={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+          <Tooltip title={`Switch to ${nextBgName}`}>
+            <IconButton
+              onClick={toggleBackground}
+              aria-label='Toggle background'
+              sx={{
+                width: 32,
+                height: 32,
+                padding: '5px',
+                border: 1,
+                borderColor:
+                  mode === 'dark'
+                    ? 'hsla(210, 14%, 22%, 0.5)'
+                    : 'rgba(0, 0, 0, 0.15)',
+                borderRadius: '12px',
+                color:
+                  mode === 'dark'
+                    ? theme.palette.primary.light
+                    : theme.palette.primary.main,
+                transition:
+                  'all 100ms ease-in, background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+                '&:hover': {
+                  borderColor:
+                    mode === 'dark'
+                      ? 'hsla(210, 14%, 40%, 0.6)'
+                      : 'rgba(0, 0, 0, 0.3)',
+                  backgroundColor:
+                    mode === 'dark'
+                      ? 'hsla(210, 14%, 13%, 0.8)'
+                      : 'rgba(0, 0, 0, 0.04)',
+                },
+              }}
+            >
+              <AutoAwesomeIcon fontSize='small' />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip
+            title={
+              mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'
+            }
+          >
             <IconButton
               onClick={toggleTheme}
               aria-label='Toggle theme'
@@ -56,25 +100,34 @@ const Header = () => {
                 height: 32,
                 padding: '5px',
                 border: 1,
-                borderColor: mode === 'dark'
-                  ? 'hsla(210, 14%, 22%, 0.5)'
-                  : 'rgba(0, 0, 0, 0.15)',
+                borderColor:
+                  mode === 'dark'
+                    ? 'hsla(210, 14%, 22%, 0.5)'
+                    : 'rgba(0, 0, 0, 0.15)',
                 borderRadius: '12px',
-                color: mode === 'dark'
-                  ? theme.palette.primary.light
-                  : theme.palette.primary.main,
-                transition: 'all 100ms ease-in, background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
+                color:
+                  mode === 'dark'
+                    ? theme.palette.primary.light
+                    : theme.palette.primary.main,
+                transition:
+                  'all 100ms ease-in, background-color 150ms cubic-bezier(0.4, 0, 0.2, 1)',
                 '&:hover': {
-                  borderColor: mode === 'dark'
-                    ? 'hsla(210, 14%, 40%, 0.6)'
-                    : 'rgba(0, 0, 0, 0.3)',
-                  backgroundColor: mode === 'dark'
-                    ? 'hsla(210, 14%, 13%, 0.8)'
-                    : 'rgba(0, 0, 0, 0.04)',
+                  borderColor:
+                    mode === 'dark'
+                      ? 'hsla(210, 14%, 40%, 0.6)'
+                      : 'rgba(0, 0, 0, 0.3)',
+                  backgroundColor:
+                    mode === 'dark'
+                      ? 'hsla(210, 14%, 13%, 0.8)'
+                      : 'rgba(0, 0, 0, 0.04)',
                 },
               }}
             >
-              {mode === 'dark' ? <LightModeIcon fontSize='small' /> : <DarkModeIcon fontSize='small' />}
+              {mode === 'dark' ? (
+                <LightModeIcon fontSize='small' />
+              ) : (
+                <DarkModeIcon fontSize='small' />
+              )}
             </IconButton>
           </Tooltip>
         </Toolbar>
