@@ -102,9 +102,7 @@ The modal implements a Flickr-inspired image carousel:
 - **Touch** — horizontal swipe with 50px threshold
 - **Minimal chrome** — close is an X icon overlaid on the image; download is a compact button inline with the title; title and description use Roboto Mono
 
-## Performance
-
-Lighthouse score targets **90+** on mobile emulation:
+## Optimizations
 
 - **Code splitting** — `React.lazy` + `Suspense` for backgrounds, modal, and app shell
 - **Inline critical CSS** — custom Vite plugin inlines the stylesheet into the HTML at build time
