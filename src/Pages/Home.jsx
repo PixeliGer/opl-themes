@@ -1,217 +1,93 @@
-import { useEffect, useState } from 'react';
-import { Container, Grid, Skeleton } from '@mui/material';
-// Components
+import { useState, useCallback, lazy, Suspense } from 'react';
+import { useTheme } from '@mui/material/styles';
+import Container from '@mui/material/Container';
+import Skeleton from '@mui/material/Skeleton';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import Header from './../Components/Header';
 import ProjectList from '../Components/ProjectList';
-import PreviewModal from '../Components/PreviewModal';
 import Footer from '../Components/Footer';
-// Configuration
-import { API_CONFIG, getGitHubUrl } from '../config/api';
+import useGitHubProjects from '../hooks/useGitHubProjects';
+
+const PreviewModal = lazy(() => import('../Components/PreviewModal'));
+
+const SKELETON_COUNT = 6;
 
 const Home = () => {
-  const [projects, setProjects] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const theme = useTheme();
+  const palette = theme.custom;
+  const { projects, loading, error } = useGitHubProjects();
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState(null);
-  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    const abortController = new AbortController();
-
-    const fetchProjects = async () => {
-      try {
-        // Fetch user repositories
-        const response = await fetch(
-          getGitHubUrl(`/users/${API_CONFIG.GITHUB_USERNAME}/repos`),
-          { signal: abortController.signal },
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `GitHub API error: ${response.status} ${response.statusText}`,
-          );
-        }
-
-        const data = await response.json();
-
-        if (!Array.isArray(data)) {
-          throw new Error('Invalid API response format');
-        }
-
-        // Filter projects with OPL-Theme naming convention
-        const filteredProjects = data.filter((project) =>
-          project?.name?.includes(API_CONFIG.REPO_NAME_FILTER),
-        );
-
-        // Fetch assets and releases for each project
-        const projectsWithAssetsAndReleases = await Promise.all(
-          filteredProjects.map(async (project) => {
-            try {
-              const baseRepoUrl = getGitHubUrl(
-                `/repos/${API_CONFIG.GITHUB_USERNAME}/${project.name}`,
-              );
-              const assetsUrl = `${baseRepoUrl}/contents/assets`;
-              const screenshotsUrl = `${assetsUrl}/screenshots`;
-              const releaseUrl = `https://github.com/${API_CONFIG.GITHUB_USERNAME}/${project.name}/releases`;
-
-              // Fetch assets folder
-              const assetsResponse = await fetch(assetsUrl, {
-                signal: abortController.signal,
-              });
-
-              if (assetsResponse.status !== 200) {
-                console.warn(
-                  `Assets folder not found for project ${project.name}`,
-                );
-                return {
-                  ...project,
-                  assets: [],
-                  screenshots: [],
-                  release_url: releaseUrl,
-                };
-              }
-
-              const assets = await assetsResponse.json();
-
-              if (!Array.isArray(assets)) {
-                throw new Error(`Invalid assets response for ${project.name}`);
-              }
-
-              const assetImages = assets.filter(
-                (item) =>
-                  item?.type === 'file' &&
-                  API_CONFIG.IMAGE_EXTENSIONS.test(item.name),
-              );
-
-              // Fetch screenshots folder
-              const screenshotsResponse = await fetch(screenshotsUrl, {
-                signal: abortController.signal,
-              });
-
-              let screenshotImages = [];
-              if (screenshotsResponse.ok) {
-                const screenshots = await screenshotsResponse.json();
-                if (Array.isArray(screenshots)) {
-                  screenshotImages = screenshots.filter(
-                    (item) =>
-                      item?.type === 'file' &&
-                      API_CONFIG.IMAGE_EXTENSIONS.test(item.name),
-                  );
-                }
-              }
-
-              return {
-                ...project,
-                assets: assetImages,
-                screenshots: screenshotImages,
-                release_url: releaseUrl,
-              };
-            } catch (error) {
-              // Handle individual project errors gracefully
-              if (error.name === 'AbortError') {
-                return null;
-              }
-              console.error(
-                `Error fetching contents for project ${project.name}:`,
-                error,
-              );
-              return {
-                ...project,
-                assets: [],
-                screenshots: [],
-                release_url: '',
-              };
-            }
-          }),
-        );
-
-        // Filter out null results from aborted requests
-        const validProjects = projectsWithAssetsAndReleases.filter(
-          (p) => p !== null,
-        );
-
-        setProjects(validProjects);
-        setError(null);
-      } catch (error) {
-        // Only set error if request wasn't aborted
-        if (error.name !== 'AbortError') {
-          console.error('Error fetching projects:', error);
-          setError(error.message);
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProjects();
-
-    // Cleanup: abort pending requests on unmount
-    return () => {
-      abortController.abort();
-    };
-  }, []);
-
-  const handleOpenModal = (project) => {
+  const handleOpenModal = useCallback((project) => {
     setSelectedProject(project);
     setModalOpen(true);
-  };
+  }, []);
 
-  const handleCloseModal = () => {
+  const handleCloseModal = useCallback(() => {
     setModalOpen(false);
     setSelectedProject(null);
-  };
+  }, []);
+
+  const modalFallback = (
+    <Box
+      sx={{
+        position: 'fixed',
+        inset: 0,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: palette.surface.backdrop,
+        zIndex: 1300,
+      }}
+    >
+      <Skeleton variant='rectangular' width={600} height={400} sx={{ borderRadius: 2 }} />
+    </Box>
+  );
 
   return (
     <>
       <Header />
-      <Container
-        maxWidth='lg'
-        style={{ paddingTop: 100, paddingBottom: 100 }}
-      >
+      <Container maxWidth='lg' sx={{ pt: { xs: 6, sm: 12.5 }, pb: { xs: 10, sm: 14 } }}>
         {loading ? (
-          // Display skeletons as card grids while loading
-          <Grid
-            container
-            spacing={3}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: 3,
+            }}
           >
-            {Array.from(new Array(6)).map((_, index) => (
-              <Grid
-                item
-                size={{ xs: 12, sm: 6, md: 4 }}
-                key={index}
-              >
-                <Skeleton
-                  variant='rectangular'
-                  width='100%'
-                  height={200}
-                />
-                <Skeleton width='60%' />
-                <Skeleton width='80%' />
-              </Grid>
+            {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
+              <Skeleton key={i} variant='rectangular' sx={{ width: '100%', height: 200, borderRadius: 1 }} />
             ))}
-          </Grid>
+          </Box>
         ) : error ? (
-          <div
-            style={{ textAlign: 'center', color: '#ff6b6b', padding: '40px' }}
-          >
-            <h3>Failed to load projects</h3>
-            <p>{error}</p>
-            <p>Please try refreshing the page.</p>
-          </div>
+          <Box textAlign='center' py={5}>
+            <Typography variant='h5' color='error' gutterBottom>
+              Failed to load projects
+            </Typography>
+            <Typography color='text.secondary' sx={{ mb: 1 }}>
+              {error}
+            </Typography>
+            <Typography variant='body2'>Please try refreshing the page.</Typography>
+          </Box>
         ) : (
           <ProjectList
             projects={projects}
             onPreviewClick={handleOpenModal}
           />
-          // <DummyGrid />
         )}
       </Container>
-      <PreviewModal
-        open={modalOpen}
-        handleClose={handleCloseModal}
-        project={selectedProject}
-      />
-
+      {modalOpen && (
+        <Suspense fallback={modalFallback}>
+          <PreviewModal
+            open={modalOpen}
+            handleClose={handleCloseModal}
+            project={selectedProject}
+          />
+        </Suspense>
+      )}
       <Footer />
     </>
   );
