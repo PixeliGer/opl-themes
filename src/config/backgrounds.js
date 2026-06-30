@@ -11,11 +11,15 @@ import { lazy } from 'react';
 export const BACKGROUND_REGISTRY = {
   figures: {
     name: 'Figures',
-    component: lazy(() => import('../Components/FiguresBackground')),
+    component: lazy(
+      () => import('../Components/Backgrounds/FiguresBackground'),
+    ),
   },
   particleWave: {
     name: 'Particle Wave',
-    component: lazy(() => import('../Components/ParticleWaveBackground')),
+    component: lazy(
+      () => import('../Components/Backgrounds/ParticleWaveBackground'),
+    ),
   },
 };
 

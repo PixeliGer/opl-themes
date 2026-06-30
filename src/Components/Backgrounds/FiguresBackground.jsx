@@ -11,8 +11,8 @@ const generateShapes = (count) => {
       id: i,
       className: SHAPE_TYPES[i % SHAPE_TYPES.length],
       style: {
-        top: `${((i * 17 + 3) % 100)}%`,
-        left: `${((i * 31 + 7) % 100)}%`,
+        top: `${(i * 17 + 3) % 100}%`,
+        left: `${(i * 31 + 7) % 100}%`,
         animationDelay: `${(i % 5) * -1}s`,
       },
     });

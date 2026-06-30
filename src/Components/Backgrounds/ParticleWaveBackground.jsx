@@ -44,16 +44,26 @@ function toAlpha(value) {
 const DEFAULT_COLOR_CONFIG = {
   red: 12,
   green: 175,
-  blue: 255 ,
+  blue: 255,
   alpha: { min: 0, max: 1 },
 };
 
 function generateColor(colorConfig) {
   return {
-    red: toColorChannel(resolveChannel(colorConfig?.red) ?? DEFAULT_COLOR_CONFIG.red),
-    green: toColorChannel(resolveChannel(colorConfig?.green) ?? resolveChannel(DEFAULT_COLOR_CONFIG.green)),
-    blue: toColorChannel(resolveChannel(colorConfig?.blue) ?? DEFAULT_COLOR_CONFIG.blue),
-    alpha: toAlpha(resolveChannel(colorConfig?.alpha) ?? resolveChannel(DEFAULT_COLOR_CONFIG.alpha)),
+    red: toColorChannel(
+      resolveChannel(colorConfig?.red) ?? DEFAULT_COLOR_CONFIG.red,
+    ),
+    green: toColorChannel(
+      resolveChannel(colorConfig?.green) ??
+        resolveChannel(DEFAULT_COLOR_CONFIG.green),
+    ),
+    blue: toColorChannel(
+      resolveChannel(colorConfig?.blue) ?? DEFAULT_COLOR_CONFIG.blue,
+    ),
+    alpha: toAlpha(
+      resolveChannel(colorConfig?.alpha) ??
+        resolveChannel(DEFAULT_COLOR_CONFIG.alpha),
+    ),
   };
 }
 
@@ -63,7 +73,10 @@ function createParticle(colorConfig) {
   return {
     x: -2,
     y: -2,
-    diameter: Math.max(0, randomNormal(PARTICLE_DIAMETER_VH, PARTICLE_DIAMETER_VH / 2)),
+    diameter: Math.max(
+      0,
+      randomNormal(PARTICLE_DIAMETER_VH, PARTICLE_DIAMETER_VH / 2),
+    ),
     duration: randomNormal(ANIMATION_DURATION_MS, ANIMATION_DURATION_MS * 0.1),
     amplitude: randomNormal(16, 2),
     offsetY: randomNormal(0, 10),
@@ -78,7 +91,8 @@ function updateParticle(particle, time) {
   const progress = (elapsed % particle.duration) / particle.duration;
 
   particle.x = progress;
-  particle.y = Math.sin(progress * particle.arc) * particle.amplitude + particle.offsetY;
+  particle.y =
+    Math.sin(progress * particle.arc) * particle.amplitude + particle.offsetY;
 }
 
 function drawParticle(context, particle, viewWidth, viewHeight) {
@@ -137,12 +151,14 @@ const ParticleWaveBackground = ({ colorConfig } = {}) => {
 
     if (!particlesRef.current || configChanged) {
       if (particlesRef.current && configChanged) {
-          for (const p of particlesRef.current) {
-            const { red, green, blue, alpha } = generateColor(colorConfig);
-            p.colour = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
-          }
-        } else {
-        particlesRef.current = Array.from({ length: NUM_PARTICLES }, () => createParticle(colorConfig));
+        for (const p of particlesRef.current) {
+          const { red, green, blue, alpha } = generateColor(colorConfig);
+          p.colour = `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+        }
+      } else {
+        particlesRef.current = Array.from({ length: NUM_PARTICLES }, () =>
+          createParticle(colorConfig),
+        );
       }
       colorConfigRef.current = colorConfig;
     }
@@ -173,7 +189,10 @@ const ParticleWaveBackground = ({ colorConfig } = {}) => {
 
   return (
     <div className='particle-wave-wrap'>
-      <canvas ref={canvasRef} className='particle-wave-canvas' />
+      <canvas
+        ref={canvasRef}
+        className='particle-wave-canvas'
+      />
     </div>
   );
 };
