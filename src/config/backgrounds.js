@@ -1,7 +1,7 @@
 /**
  * Background component registry.
  * Single source of truth for all available backgrounds.
- * To add a new background, create its component in `src/Components/`,
+ * To add a new background, create its component in `src/Components/Backgrounds/`,
  * then add an entry here with a unique key, display `name`, and a
  * `lazy(() => import(...))` component. All consumers (header toggle,
  * context cycling, random initial selection) automatically pick it up.
