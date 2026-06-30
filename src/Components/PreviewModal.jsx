@@ -14,7 +14,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import placeholderWide from '../assets/placeholder_wide.svg';
 
-const MONO = '"Roboto Mono", "Roboto Mono Variable", monospace';
+const MONO = '"Roboto Mono Variable", "Roboto Mono", monospace';
 const SWIPE_THRESHOLD = 50;
 
 const iconBtnBaseSx = {
@@ -87,14 +87,16 @@ const PreviewModal = ({ open, handleClose, project }) => {
 
   const images = useMemo(() => {
     if (!project) return [];
-    return [...project.screenshots]
-      // Sort by trailing number in the filename (screenshot-1, screenshot-2, ...)
-      .sort((a, b) => {
-        const numA = a.download_url.match(/(\d+)(?=\.\w*$)/)?.[0] || '0';
-        const numB = b.download_url.match(/(\d+)(?=\.\w*$)/)?.[0] || '0';
-        return numA.localeCompare(numB, undefined, { numeric: true });
-      })
-      .map((s) => s.download_url);
+    return (
+      [...project.screenshots]
+        // Sort by trailing number in the filename (screenshot-1, screenshot-2, ...)
+        .sort((a, b) => {
+          const numA = a.download_url.match(/(\d+)(?=\.\w*$)/)?.[0] || '0';
+          const numB = b.download_url.match(/(\d+)(?=\.\w*$)/)?.[0] || '0';
+          return numA.localeCompare(numB, undefined, { numeric: true });
+        })
+        .map((s) => s.download_url)
+    );
   }, [project]);
 
   const maxSteps = images.length;
@@ -212,7 +214,10 @@ const PreviewModal = ({ open, handleClose, project }) => {
     (e) => {
       const diffX = e.changedTouches[0].clientX - touchRef.current.startX;
       const diffY = e.changedTouches[0].clientY - touchRef.current.startY;
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > SWIPE_THRESHOLD) {
+      if (
+        Math.abs(diffX) > Math.abs(diffY) &&
+        Math.abs(diffX) > SWIPE_THRESHOLD
+      ) {
         if (diffX > 0) handleBack();
         else handleNext();
       }

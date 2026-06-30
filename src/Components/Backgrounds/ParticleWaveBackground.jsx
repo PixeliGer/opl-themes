@@ -132,6 +132,7 @@ const ParticleWaveBackground = ({ colorConfig } = {}) => {
   const particlesRef = useRef(null);
   const animationFrameRef = useRef(null);
   const colorConfigRef = useRef(colorConfig);
+  const pausedRef = useRef(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -139,6 +140,7 @@ const ParticleWaveBackground = ({ colorConfig } = {}) => {
     const configChanged = colorConfig !== colorConfigRef.current;
 
     let viewWidth, viewHeight;
+    let resizeTimer = null;
 
     function handleResize() {
       const dimensions = resizeCanvas(canvas, context);
@@ -146,8 +148,16 @@ const ParticleWaveBackground = ({ colorConfig } = {}) => {
       viewHeight = dimensions.height;
     }
 
+    function handleResizeDebounced() {
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
+      resizeTimer = requestAnimationFrame(() => {
+        handleResize();
+        resizeTimer = null;
+      });
+    }
+
     handleResize();
-    window.addEventListener('resize', handleResize);
+    window.addEventListener('resize', handleResizeDebounced);
 
     if (!particlesRef.current || configChanged) {
       if (particlesRef.current && configChanged) {
@@ -163,7 +173,21 @@ const ParticleWaveBackground = ({ colorConfig } = {}) => {
       colorConfigRef.current = colorConfig;
     }
 
+    function handleVisibilityChange() {
+      pausedRef.current = document.hidden;
+      if (!pausedRef.current && !animationFrameRef.current) {
+        animationFrameRef.current = requestAnimationFrame(animationLoop);
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     function animationLoop(time) {
+      if (pausedRef.current) {
+        animationFrameRef.current = null;
+        return;
+      }
+
       const particles = particlesRef.current;
 
       for (let i = 0; i < particles.length; i++) {
@@ -183,7 +207,9 @@ const ParticleWaveBackground = ({ colorConfig } = {}) => {
 
     return () => {
       cancelAnimationFrame(animationFrameRef.current);
-      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('resize', handleResizeDebounced);
+      if (resizeTimer) cancelAnimationFrame(resizeTimer);
     };
   }, [colorConfig]);
 
