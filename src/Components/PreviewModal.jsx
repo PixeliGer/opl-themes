@@ -15,24 +15,50 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import placeholderWide from '../assets/placeholder_wide.svg';
 
 const MONO = '"Roboto Mono", "Roboto Mono Variable", monospace';
+const SWIPE_THRESHOLD = 50;
 
+const iconBtnBaseSx = {
+  bgcolor: 'rgba(0,0,0,0.4)',
+  color: 'white',
+  opacity: 0.7,
+  transition: 'opacity 200ms, background-color 200ms',
+  '&:hover': {
+    bgcolor: 'rgba(0,0,0,0.75)',
+    opacity: 1,
+  },
+};
+
+/**
+ * Compute the visible dot indicators for the pagination strip.
+ * Shows all dots when total <= 7. For larger sets the first and last
+ * dots are always visible, with ellipsis truncation and a window
+ * of dots around the active step.
+ * @param {number} total  Total number of steps
+ * @param {number} active Zero-based index of the active step
+ * @returns {Array<{type: 'dot'|'ellipsis', index?: number}>}
+ */
 function getVisibleDots(total, active) {
   if (total <= 0) return [];
+  // Show all dots directly when the set is small enough
   if (total <= 7) {
     return Array.from({ length: total }, (_, i) => ({ type: 'dot', index: i }));
   }
 
+  // Windowing: always show first + last dot; truncate middle with ellipsis
   const items = [];
   items.push({ type: 'dot', index: 0 });
 
   if (active <= 3) {
+    // Active near the start — show indices 1-4, then ellipsis
     for (let i = 1; i <= 4; i++) items.push({ type: 'dot', index: i });
     items.push({ type: 'ellipsis' });
   } else if (active >= total - 4) {
+    // Active near the end — ellipsis, then last 4 interior dots
     items.push({ type: 'ellipsis' });
     for (let i = total - 5; i <= total - 2; i++)
       items.push({ type: 'dot', index: i });
   } else {
+    // Active in the middle — show three dots around it, flanked by ellipses
     items.push({ type: 'ellipsis' });
     items.push({ type: 'dot', index: active - 1 });
     items.push({ type: 'dot', index: active });
@@ -44,6 +70,11 @@ function getVisibleDots(total, active) {
   return items;
 }
 
+/**
+ * Full-screen modal displaying project screenshots with navigation,
+ * swipe/keyboard support, and a download button.
+ * @param {{ open: boolean, handleClose: () => void, project: object }} _
+ */
 const PreviewModal = ({ open, handleClose, project }) => {
   const theme = useTheme();
   const palette = theme.custom;
@@ -57,6 +88,7 @@ const PreviewModal = ({ open, handleClose, project }) => {
   const images = useMemo(() => {
     if (!project) return [];
     return [...project.screenshots]
+      // Sort by trailing number in the filename (screenshot-1, screenshot-2, ...)
       .sort((a, b) => {
         const numA = a.download_url.match(/(\d+)(?=\.\w*$)/)?.[0] || '0';
         const numB = b.download_url.match(/(\d+)(?=\.\w*$)/)?.[0] || '0';
@@ -164,9 +196,10 @@ const PreviewModal = ({ open, handleClose, project }) => {
   );
 
   useEffect(() => {
+    if (!open) return;
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [handleKeyDown]);
+  }, [handleKeyDown, open]);
 
   const handleTouchStart = useCallback((e) => {
     touchRef.current = {
@@ -179,7 +212,7 @@ const PreviewModal = ({ open, handleClose, project }) => {
     (e) => {
       const diffX = e.changedTouches[0].clientX - touchRef.current.startX;
       const diffY = e.changedTouches[0].clientY - touchRef.current.startY;
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > SWIPE_THRESHOLD) {
         if (diffX > 0) handleBack();
         else handleNext();
       }
@@ -244,20 +277,13 @@ const PreviewModal = ({ open, handleClose, project }) => {
                 onClick={handleClose}
                 aria-label='Close preview'
                 sx={{
+                  ...iconBtnBaseSx,
                   position: 'absolute',
                   top: 8,
                   right: 8,
                   zIndex: 3,
-                  bgcolor: 'rgba(0,0,0,0.4)',
-                  color: 'white',
                   width: 32,
                   height: 32,
-                  opacity: 0.7,
-                  transition: 'opacity 200ms, background-color 200ms',
-                  '&:hover': {
-                    bgcolor: 'rgba(0,0,0,0.75)',
-                    opacity: 1,
-                  },
                 }}
               >
                 <CloseIcon sx={{ fontSize: 18 }} />
@@ -270,21 +296,14 @@ const PreviewModal = ({ open, handleClose, project }) => {
                   onClick={handleBack}
                   aria-label='Previous image'
                   sx={{
+                    ...iconBtnBaseSx,
                     position: 'absolute',
                     top: '50%',
                     transform: 'translateY(-50%)',
                     left: 8,
                     zIndex: 2,
-                    bgcolor: 'rgba(0,0,0,0.4)',
-                    color: 'white',
                     width: 40,
                     height: 40,
-                    opacity: 0.7,
-                    transition: 'opacity 200ms, background-color 200ms',
-                    '&:hover': {
-                      bgcolor: 'rgba(0,0,0,0.75)',
-                      opacity: 1,
-                    },
                   }}
                 >
                   <ChevronLeftIcon />
@@ -294,21 +313,14 @@ const PreviewModal = ({ open, handleClose, project }) => {
                   onClick={handleNext}
                   aria-label='Next image'
                   sx={{
+                    ...iconBtnBaseSx,
                     position: 'absolute',
                     top: '50%',
                     transform: 'translateY(-50%)',
                     right: 8,
                     zIndex: 2,
-                    bgcolor: 'rgba(0,0,0,0.4)',
-                    color: 'white',
                     width: 40,
                     height: 40,
-                    opacity: 0.7,
-                    transition: 'opacity 200ms, background-color 200ms',
-                    '&:hover': {
-                      bgcolor: 'rgba(0,0,0,0.75)',
-                      opacity: 1,
-                    },
                   }}
                 >
                   <ChevronRightIcon />
@@ -426,6 +438,8 @@ const PreviewModal = ({ open, handleClose, project }) => {
     </Modal>
   );
 };
+
+PreviewModal.displayName = 'PreviewModal';
 
 PreviewModal.propTypes = {
   open: PropTypes.bool.isRequired,
