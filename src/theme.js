@@ -3,9 +3,9 @@ import { darkPalette, lightPalette } from './styles/palette';
 
 const baseTheme = {
   typography: {
-    fontFamily: "'Roboto Condensed', sans-serif",
+    fontFamily: "'Roboto Condensed Variable', 'Roboto Condensed', sans-serif",
     body1: {
-      fontFamily: "'Roboto Condensed', sans-serif",
+      fontFamily: "'Roboto Condensed Variable', 'Roboto Condensed', sans-serif",
       fontWeight: 400,
     },
   },

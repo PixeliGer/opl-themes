@@ -42,14 +42,22 @@ const Home = () => {
         zIndex: 1300,
       }}
     >
-      <Skeleton variant='rectangular' width={600} height={400} sx={{ borderRadius: 2 }} />
+      <Skeleton
+        variant='rectangular'
+        width={600}
+        height={400}
+        sx={{ borderRadius: 2 }}
+      />
     </Box>
   );
 
   return (
     <>
       <Header />
-      <Container maxWidth='lg' sx={{ pt: { xs: 6, sm: 12.5 }, pb: { xs: 10, sm: 14 } }}>
+      <Container
+        maxWidth='lg'
+        sx={{ pt: { xs: 9, sm: 12.5 }, pb: { xs: 10, sm: 14 } }}
+      >
         {loading ? (
           <Box
             sx={{
@@ -59,18 +67,34 @@ const Home = () => {
             }}
           >
             {Array.from({ length: SKELETON_COUNT }).map((_, i) => (
-              <Skeleton key={i} variant='rectangular' sx={{ width: '100%', height: 200, borderRadius: 1 }} />
+              <Skeleton
+                key={i}
+                variant='rectangular'
+                sx={{ width: '100%', height: 200, borderRadius: 1 }}
+              />
             ))}
           </Box>
         ) : error ? (
-          <Box textAlign='center' py={5}>
-            <Typography variant='h5' color='error' gutterBottom>
+          <Box
+            textAlign='center'
+            py={5}
+          >
+            <Typography
+              variant='h5'
+              color='error'
+              gutterBottom
+            >
               Failed to load projects
             </Typography>
-            <Typography color='text.secondary' sx={{ mb: 1 }}>
+            <Typography
+              color='text.secondary'
+              sx={{ mb: 1 }}
+            >
               {error}
             </Typography>
-            <Typography variant='body2'>Please try refreshing the page.</Typography>
+            <Typography variant='body2'>
+              Please try refreshing the page.
+            </Typography>
           </Box>
         ) : (
           <ProjectList

@@ -5,9 +5,15 @@ import SquareProjectCard from './SquareProjectCard';
 
 const ProjectList = ({ projects, onPreviewClick }) => {
   return (
-    <Grid container spacing={{ xs: 4, md: 4 }}>
+    <Grid
+      container
+      spacing={{ xs: 4, md: 4 }}
+    >
       {projects.map((project, index) => (
-        <Grid size={{ xs: 6, sm: 6, md: 4, lg: 3 }} key={project.id}>
+        <Grid
+          size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+          key={project.id}
+        >
           <SquareProjectCard
             project={project}
             onPreviewClick={onPreviewClick}

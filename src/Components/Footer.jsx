@@ -16,6 +16,7 @@ const FooterBox = styled(Box)(({ theme }) => ({
   width: '100%',
   backgroundColor: theme.custom.surface.footer,
   backdropFilter: 'blur(10px)',
+  transform: 'translateZ(0)',
   textAlign: 'center',
   padding: '10px 0',
   color: theme.custom.text.primary,
@@ -27,6 +28,7 @@ const GradientLink = styled(Link)(({ theme }) => {
     background: `linear-gradient(270deg, ${a1}, ${a2}, ${a3}, ${a4})`,
     backgroundSize: '800% 800%',
     WebkitBackgroundClip: 'text',
+    backgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     animation: `${gradientAnimation} 20s ease infinite`,
     fontWeight: 700,
@@ -36,7 +38,10 @@ const GradientLink = styled(Link)(({ theme }) => {
 const Footer = () => {
   return (
     <FooterBox>
-      <Typography variant='caption' sx={{ fontFamily: 'Roboto Mono, sans-serif' }}>
+      <Typography
+        variant='caption'
+        sx={{ fontFamily: "'Roboto Mono Variable', 'Roboto Mono', sans-serif" }}
+      >
         Made by{' '}
         <GradientLink
           href='https://github.com/PixeliGer'

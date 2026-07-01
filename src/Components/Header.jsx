@@ -28,6 +28,7 @@ const Header = () => {
         backgroundImage: 'none',
         backgroundColor: palette.surface.header,
         backdropFilter: 'blur(10px)',
+        transform: 'translateZ(0)',
         borderBottom: `1px solid ${palette.border.subtle}`,
         color: palette.text.primary,
       }}
