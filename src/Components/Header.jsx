@@ -31,7 +31,6 @@ const Header = () => {
         transform: 'translateZ(0)',
         borderBottom: `1px solid ${palette.border.subtle}`,
         color: palette.text.primary,
-        '@media (hover: none)': { backdropFilter: 'none' },
       }}
     >
       <Container maxWidth='lg'>

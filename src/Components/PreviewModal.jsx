@@ -409,12 +409,11 @@ const PreviewModal = ({ open, handleClose, project }) => {
                 <Button
                   startIcon={<CloudDownloadIcon />}
                   variant='outlined'
-                  size='small'
+                  color='success'
                   href={project?.release_url || '#'}
                   target='_blank'
                   sx={{
                     fontSize: 12,
-                    textTransform: 'none',
                     whiteSpace: 'nowrap',
                     flexShrink: 0,
                   }}

@@ -20,7 +20,6 @@ const FooterBox = styled(Box)(({ theme }) => ({
   textAlign: 'center',
   padding: '10px 0',
   color: theme.custom.text.primary,
-  '@media (hover: none)': { backdropFilter: 'none' },
 }));
 
 const GradientLink = styled(Link)(({ theme }) => {

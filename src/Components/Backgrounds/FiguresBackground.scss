@@ -22,7 +22,6 @@
   left: 0;
   top: 0;
   z-index: -100;
-  transform: translateZ(0);
 }
 
 .back-shapes {
@@ -119,15 +118,8 @@
 }
 
 @media (max-width: 768px) {
-  .back-shapes .floating:nth-child(n + 10) {
+  .back-shapes .floating:nth-child(n + 16) {
     display: none;
-  }
-}
-
-@media (hover: none) {
-  .floating {
-    will-change: auto;
-    animation-duration: 8s;
   }
 }
 
